@@ -1,3 +1,48 @@
+[workspace]
+resolver = "2"
+members = [
+  ".",
+  "storages/web-storage",
+  "storages/idb-storage",
+]
+default-members = [
+  ".",
+  "storages/web-storage",
+  "storages/idb-storage",
+]
+
+[workspace.package]
+version = "0.19.0"
+edition = "2024"
+description = "GlueSQL - Open source SQL database engine fully written in Rust with pure functional execution layer, easily swappable storage and web assembly support!"
+license = "Apache-2.0"
+repository = "https://github.com/gluesql/gluesql-js"
+documentation = "https://docs.rs/gluesql/"
+
+[workspace.dependencies]
+gluesql-core = { version = "0.19.0" }
+gluesql_memory_storage = { version = "0.19.0" }
+gluesql-composite-storage = { version = "0.19.0" }
+gluesql-web-storage = { path = "storages/web-storage", version = "0.19.0" }
+gluesql-idb-storage = { path = "storages/idb-storage", version = "0.19.0" }
+test-suite = { package = "gluesql-test-suite", version = "0.19.0" }
+getrandom = { version = "0.2", features = ["js"] }
+
+[workspace.lints.clippy]
+pedantic = { level = "deny", priority = -1 }
+too_many_lines = "allow"
+cast_possible_truncation = "allow"
+cast_possible_wrap = "allow"
+cast_precision_loss = "allow"
+cast_sign_loss = "allow"
+missing_errors_doc = "allow"
+missing_panics_doc = "allow"
+must_use_candidate = "allow"
+struct_field_names = "allow"
+float_cmp = "allow"
+enum_glob_use = "allow"
+wildcard_imports = "allow"
+
 [package]
 name = "gluesql-js"
 authors = ["Taehoon Moon <taehoon.moon@outlook.com>"]
@@ -8,6 +53,7 @@ license.workspace = true
 repository.workspace = true
 documentation.workspace = true
 readme = false
+publish = false
 
 [lib]
 crate-type = ["cdylib", "rlib"]
@@ -37,6 +83,9 @@ gloo-utils = { version = "0.1.6", features = ["serde"] }
 # all the `std::fmt` and `std::panicking` infrastructure, so isn't great for
 # code size when deploying.
 console_error_panic_hook = { version = "0.1.6", optional = true }
+
+[target.'cfg(target_arch = "wasm32")'.dependencies]
+getrandom.workspace = true
 
 [dev-dependencies]
 test-suite.workspace = true

@@ -1,8 +1,8 @@
 # GlueSQL.js
 
 [![npm](https://img.shields.io/npm/v/gluesql)](https://www.npmjs.com/package/gluesql)
-[![GitHub](https://img.shields.io/github/stars/gluesql/gluesql)](https://github.com/gluesql/gluesql)
-[![LICENSE](https://img.shields.io/crates/l/gluesql.svg)](https://github.com/gluesql/gluesql/blob/main/LICENSE)
+[![GitHub](https://img.shields.io/github/stars/gluesql/gluesql-js)](https://github.com/gluesql/gluesql-js)
+[![LICENSE](https://img.shields.io/crates/l/gluesql.svg)](https://github.com/gluesql/gluesql-js/blob/main/LICENSE)
 [![Chat](https://img.shields.io/discord/780298017940176946)](https://discord.gg/C6TDEgzDzY)
 [![Coverage Status](https://coveralls.io/repos/github/gluesql/gluesql/badge.svg?branch=main)](https://coveralls.io/github/gluesql/gluesql?branch=main)
 
@@ -52,4 +52,4 @@ console.log(rows);
 
 ## License
 
-This project is licensed under the Apache License, Version 2.0 - see the [LICENSE](https://raw.githubusercontent.com/gluesql/gluesql/main/LICENSE) file for details.
+This project is licensed under the Apache License, Version 2.0 - see the [LICENSE](https://raw.githubusercontent.com/gluesql/gluesql-js/main/LICENSE) file for details.

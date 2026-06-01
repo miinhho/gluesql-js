@@ -6,7 +6,7 @@
   "main": "gluesql.node.js",
   "repository": {
     "type": "git",
-    "url": "git+https://github.com/gluesql/gluesql.git"
+    "url": "git+https://github.com/gluesql/gluesql-js.git"
   },
   "keywords": [
     "SQL",
@@ -20,7 +20,7 @@
   "author": "Taehoon Moon",
   "license": "Apache-2.0",
   "bugs": {
-    "url": "https://github.com/gluesql/gluesql/issues"
+    "url": "https://github.com/gluesql/gluesql-js/issues"
   },
   "homepage": "https://gluesql.org/docs",
   "files": [
