@@ -1,13 +1,11 @@
-# Vim swap files
-*.swp
-*.swo
-
-/target
-**/*.rs.bk
-Cargo.lock
+dist_web/
+dist_nodejs/
+dist/
+node_modules/
 bin/
 pkg/
+target/
+**/*.rs.bk
 wasm-pack.log
-
-node_modules/
+Cargo.lock
 package-lock.json
