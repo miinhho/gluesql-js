@@ -4,6 +4,12 @@
   "description": "GlueSQL is quite sticky, it attaches to anywhere",
   "browser": "gluesql.js",
   "main": "gluesql.node.js",
+  "scripts": {
+    "build": "npm run build:web && npm run build:node",
+    "build:web": "wasm-pack build --no-pack --target web --no-typescript --release --out-dir ./dist_web",
+    "build:node": "napi build --release --platform --js gluesql.native.js --dts gluesql.native.d.ts --no-default-features --features nodejs",
+    "test:node": "node tests/nodejs.js"
+  },
   "repository": {
     "type": "git",
     "url": "git+https://github.com/gluesql/gluesql-js.git"
@@ -24,8 +30,8 @@
   },
   "homepage": "https://gluesql.org/docs",
   "files": [
-    "dist_nodejs/gluesql_js.js",
-    "dist_nodejs/gluesql_js_bg.wasm",
+    "gluesql_js.*.node",
+    "gluesql.native.js",
     "dist_web/gluesql_js.js",
     "dist_web/gluesql_js_bg.wasm",
     "gluesql.js",
@@ -33,5 +39,12 @@
     "gluesql.rollup.js",
     "package.json",
     "README.md"
-  ]
+  ],
+  "napi": {
+    "binaryName": "gluesql_js"
+  },
+  "devDependencies": {
+    "@napi-rs/cli": "^3.7.1",
+    "wasm-pack": "^0.13.1"
+  }
 }
