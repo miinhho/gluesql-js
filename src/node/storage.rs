@@ -8,6 +8,8 @@ use {
 
 #[cfg(feature = "csv")]
 use gluesql_csv_storage::CsvStorage;
+#[cfg(feature = "file")]
+use gluesql_file_storage::FileStorage;
 #[cfg(feature = "json")]
 use gluesql_json_storage::JsonStorage;
 #[cfg(feature = "redb")]
@@ -28,6 +30,9 @@ pub fn storages() -> Vec<String> {
 
     #[cfg(feature = "csv")]
     storages.push("csv");
+
+    #[cfg(feature = "file")]
+    storages.push("file");
 
     storages.sort_unstable();
 
@@ -62,6 +67,10 @@ pub enum StorageConfig {
     Csv {
         path: String,
     },
+    #[cfg(feature = "file")]
+    File {
+        path: String,
+    },
 }
 
 impl StorageConfig {
@@ -81,11 +90,13 @@ impl StorageConfig {
             Self::Json { path } => JsonStorage::new(path).map(box_storage),
             #[cfg(feature = "csv")]
             Self::Csv { path } => CsvStorage::new(path).map(box_storage),
+            #[cfg(feature = "file")]
+            Self::File { path } => FileStorage::new(path).map(box_storage),
         }
     }
 }
 
-#[cfg(any(feature = "csv", feature = "json", feature = "redb"))]
+#[cfg(any(feature = "csv", feature = "file", feature = "json", feature = "redb"))]
 fn box_storage<T: Engine + 'static>(storage: T) -> Box<dyn Engine> {
     Box::new(storage)
 }

@@ -239,7 +239,7 @@ test('reports the backends this build carries', () => {
   assert.deepEqual(compiled, [...compiled].sort());
 
   // The published build ships every embedded, pure-Rust backend.
-  for (const name of ['csv', 'json', 'memory', 'redb']) {
+  for (const name of ['csv', 'file', 'json', 'memory', 'redb']) {
     assert.ok(compiled.includes(name), `expected the build to carry ${name}`);
   }
 });

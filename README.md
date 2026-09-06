@@ -267,6 +267,7 @@ it is what the `ENGINE` clause of `CREATE TABLE` refers to.
 | Real data that must survive restarts | One redb file | `redb` |
 | Data other tools read and write | JSONL / JSON files | `json` |
 | Spreadsheet-shaped data | CSV files | `csv` |
+| Rows you want to diff and review | One file per row | `file` |
 
 ```javascript
 const { gluesql } = require('gluesql');
@@ -354,6 +355,19 @@ const db = gluesql({
 });
 
 await db.query('SELECT * FROM Report');
+```
+
+### `file`
+
+`file` writes one directory per table under `path` and one `.ron` file per row.
+Small writes stay small and every change is a readable diff, at the cost of a
+lot of files for large tables.
+
+```javascript
+const db = gluesql({
+  engines: { rows: { storage: 'file', path: './data' } },
+  defaultEngine: 'rows',
+});
 ```
 
 ## License

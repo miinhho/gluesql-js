@@ -61,6 +61,12 @@ source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "f2032f911046de80f0a198e0901378627c33f59ea0ac00e363d481118bd70a53"
 
 [[package]]
+name = "base64"
+version = "0.21.7"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "9d297deb1925b89f2ccc13d7635fa0714f12c87adce1c75356b39ca9b7178567"
+
+[[package]]
 name = "bigdecimal"
 version = "0.4.10"
 source = "registry+https://github.com/rust-lang/crates.io-index"
@@ -88,6 +94,9 @@ name = "bitflags"
 version = "2.11.1"
 source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "c4512299f36f043ab09a583e57bceb5a5aab7a73db1805848e8fef3c9e8c78b3"
+dependencies = [
+ "serde_core",
+]
 
 [[package]]
 name = "bitmaps"
@@ -553,6 +562,19 @@ dependencies = [
 ]
 
 [[package]]
+name = "gluesql-file-storage"
+version = "0.20.0"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "3339f47f30bd4b4ab1ea48fac11a13dabaee63b848b4917242534a7a99588bbb"
+dependencies = [
+ "gluesql-core",
+ "hex",
+ "ron",
+ "serde",
+ "uuid",
+]
+
+[[package]]
 name = "gluesql-js"
 version = "0.20.0"
 dependencies = [
@@ -562,6 +584,7 @@ dependencies = [
  "gluesql-composite-storage",
  "gluesql-core",
  "gluesql-csv-storage",
+ "gluesql-file-storage",
  "gluesql-json-storage",
  "gluesql-opfs-storage",
  "gluesql-redb-storage",
@@ -1218,6 +1241,18 @@ dependencies = [
  "proc-macro2",
  "quote",
  "syn 1.0.109",
+]
+
+[[package]]
+name = "ron"
+version = "0.8.1"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "b91f7eff05f748767f183df4320a63d6936e9c6107d97c9e6bdd9784f4289c94"
+dependencies = [
+ "base64",
+ "bitflags",
+ "serde",
+ "serde_derive",
 ]
 
 [[package]]
