@@ -117,6 +117,52 @@ jobs:
         if: matrix.test
         run: npm run test:node
 
+  js_node_optional_storages:
+    name: Node.js optional storages
+    runs-on: ubuntu-latest
+    services:
+      redis:
+        image: redis:7
+        ports:
+          - 6379:6379
+        options: >-
+          --health-cmd "redis-cli ping"
+          --health-interval 5s
+          --health-timeout 3s
+          --health-retries 10
+      mongo:
+        image: mongo:7
+        ports:
+          - 27017:27017
+        options: >-
+          --health-cmd "mongosh --quiet --eval 'db.adminCommand({ping:1})'"
+          --health-interval 5s
+          --health-timeout 3s
+          --health-retries 10
+    steps:
+      - uses: actions/checkout@v6
+
+      - name: Set up node
+        uses: actions/setup-node@v6
+        with:
+          node-version: 24
+
+      - name: Install dependencies
+        run: npm install --no-package-lock
+
+      # parquet, redis and mongo are opt-in cargo features; the specs that
+      # cover them skip themselves on a default build.
+      - name: Build Node.js package with every storage
+        run: npm run build:node:full
+
+      # The Redis and MongoDB specs skip themselves when no server answers;
+      # GLUESQL_TEST_REQUIRE_SERVICES turns that skip into a failure so this
+      # job cannot report success without exercising them.
+      - name: Test Node.js package
+        run: npm run test:node
+        env:
+          GLUESQL_TEST_REQUIRE_SERVICES: "1"
+
   js_browser_tests:
     name: Browser tests
     runs-on: ubuntu-latest
