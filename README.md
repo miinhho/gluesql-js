@@ -265,6 +265,7 @@ it is what the `ENGINE` clause of `CREATE TABLE` refers to.
 | --- | --- | --- |
 | Scratch state & caches | Memory | `memory` (default) |
 | Real data that must survive restarts | One redb file | `redb` |
+| Data other tools read and write | JSONL / JSON files | `json` |
 
 ```javascript
 const { gluesql } = require('gluesql');
@@ -323,6 +324,20 @@ cannot be opened twice at a time. `removeEngine` releases it:
 ```javascript
 db.setDefaultEngine('memory');
 db.removeEngine('local');
+```
+
+### `json`
+
+`json` keeps one `Table.jsonl` file of rows and one `Table.sql` schema file per
+table inside `path`. They are plain text, so other tools can read, edit or
+generate them - a `.jsonl` file dropped into `path` is queryable with no
+`CREATE TABLE` at all.
+
+```javascript
+const db = gluesql({
+  engines: { docs: { storage: 'json', path: './data' } },
+  defaultEngine: 'docs',
+});
 ```
 
 ## License

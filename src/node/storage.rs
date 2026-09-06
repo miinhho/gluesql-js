@@ -6,6 +6,8 @@ use {
     serde_json::Value as Json,
 };
 
+#[cfg(feature = "json")]
+use gluesql_json_storage::JsonStorage;
 #[cfg(feature = "redb")]
 use gluesql_redb_storage::RedbStorage;
 
@@ -18,6 +20,9 @@ pub fn storages() -> Vec<String> {
 
     #[cfg(feature = "redb")]
     storages.push("redb");
+
+    #[cfg(feature = "json")]
+    storages.push("json");
 
     storages.sort_unstable();
 
@@ -44,6 +49,10 @@ pub enum StorageConfig {
     Redb {
         path: String,
     },
+    #[cfg(feature = "json")]
+    Json {
+        path: String,
+    },
 }
 
 impl StorageConfig {
@@ -59,11 +68,13 @@ impl StorageConfig {
             Self::Memory {} => Ok(Box::new(MemoryStorage::default())),
             #[cfg(feature = "redb")]
             Self::Redb { path } => RedbStorage::new(path).map(box_storage),
+            #[cfg(feature = "json")]
+            Self::Json { path } => JsonStorage::new(path).map(box_storage),
         }
     }
 }
 
-#[cfg(feature = "redb")]
+#[cfg(any(feature = "json", feature = "redb"))]
 fn box_storage<T: Engine + 'static>(storage: T) -> Box<dyn Engine> {
     Box::new(storage)
 }

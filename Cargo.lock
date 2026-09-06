@@ -527,6 +527,7 @@ dependencies = [
  "gloo-utils 0.1.7",
  "gluesql-composite-storage",
  "gluesql-core",
+ "gluesql-json-storage",
  "gluesql-opfs-storage",
  "gluesql-redb-storage",
  "gluesql-test-suite",
@@ -541,6 +542,20 @@ dependencies = [
  "wasm-bindgen",
  "wasm-bindgen-futures",
  "wasm-bindgen-test",
+]
+
+[[package]]
+name = "gluesql-json-storage"
+version = "0.20.0"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "6d4c5b3eb039f49ba05b5800880e7c556f927b514d4ec649337dbeaa8f1d9038"
+dependencies = [
+ "gluesql-core",
+ "hex",
+ "iter-enum",
+ "serde",
+ "serde_json",
+ "thiserror 1.0.69",
 ]
 
 [[package]]
