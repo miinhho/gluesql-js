@@ -270,6 +270,7 @@ it is what the `ENGINE` clause of `CREATE TABLE` refers to.
 | Rows you want to diff and review | One file per row | `file` |
 | Analytical snapshots | Parquet files | `parquet` |
 | A Redis server you already run | Redis | `redis` |
+| A MongoDB server you already run | MongoDB | `mongo` |
 
 ```javascript
 const { gluesql } = require('gluesql');
@@ -314,8 +315,9 @@ loudly instead of quietly falling back to a default.
 
 Every backend is a cargo feature, and the published binary carries only the
 embedded, pure-Rust ones. `parquet` pulls the Arrow codec stack and needs a C
-toolchain, and `redis` talks to a server, so they are left out: they would add
-megabytes to the native artifact of every user.
+toolchain, and `redis` and `mongo` talk to a server through a large driver, so
+they are left out: they would more than double the native artifact of every
+user.
 
 `storages()` reports what a build carries, and an engine config naming a
 backend that is not compiled in is rejected as an unknown `storage` value:
@@ -437,6 +439,25 @@ const db = gluesql({
 `addEngine` connects immediately and throws when the server is unreachable.
 The attempt blocks the calling thread, so it is bounded by `connectTimeoutMs`
 (1000 by default).
+
+### `mongo`
+
+`mongo` maps each table to a MongoDB collection inside `database`. `url` is a
+standard MongoDB connection string and defaults to `mongodb://localhost:27017`.
+
+```javascript
+const db = gluesql({
+  engines: {
+    docs: { storage: 'mongo', url: 'mongodb://localhost:27017', database: 'app' },
+  },
+  defaultEngine: 'docs',
+});
+```
+
+The driver connects lazily, so an unreachable server is reported by the first
+query rather than by `addEngine`, after the driver's server selection timeout.
+Shorten that wait in the connection string itself:
+`mongodb://localhost:27017/?serverSelectionTimeoutMS=2000`.
 
 ## License
 

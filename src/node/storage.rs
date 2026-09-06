@@ -12,6 +12,8 @@ use gluesql_csv_storage::CsvStorage;
 use gluesql_file_storage::FileStorage;
 #[cfg(feature = "json")]
 use gluesql_json_storage::JsonStorage;
+#[cfg(feature = "mongo")]
+use gluesql_mongo_storage::MongoStorage;
 #[cfg(feature = "parquet")]
 use gluesql_parquet_storage::ParquetStorage;
 #[cfg(feature = "redb")]
@@ -50,6 +52,9 @@ pub fn storages() -> Vec<String> {
 
     #[cfg(feature = "redis")]
     storages.push("redis");
+
+    #[cfg(feature = "mongo")]
+    storages.push("mongo");
 
     storages.sort_unstable();
 
@@ -103,6 +108,13 @@ pub enum StorageConfig {
         #[serde(default = "default_redis_connect_timeout_ms")]
         connect_timeout_ms: u64,
     },
+    #[cfg(feature = "mongo")]
+    #[serde(rename_all = "camelCase")]
+    Mongo {
+        #[serde(default = "default_mongo_url")]
+        url: String,
+        database: String,
+    },
 }
 
 impl StorageConfig {
@@ -133,6 +145,8 @@ impl StorageConfig {
                 port,
                 connect_timeout_ms,
             } => open_redis(&namespace, &host, port, connect_timeout_ms).map(box_storage),
+            #[cfg(feature = "mongo")]
+            Self::Mongo { url, database } => MongoStorage::new(&url, &database).map(box_storage),
         }
     }
 }
@@ -141,6 +155,7 @@ impl StorageConfig {
     feature = "csv",
     feature = "file",
     feature = "json",
+    feature = "mongo",
     feature = "parquet",
     feature = "redb",
     feature = "redis"
@@ -201,4 +216,9 @@ fn open_redis(
 
         Error::StorageMsg(format!("redis: {host}:{port}: {reason}"))
     })
+}
+
+#[cfg(feature = "mongo")]
+fn default_mongo_url() -> String {
+    "mongodb://localhost:27017".to_owned()
 }
