@@ -1,6 +1,7 @@
 const assert = require('node:assert/strict');
 const { test } = require('node:test');
 const { gluesql, storages } = require('../../gluesql.node.js');
+const { tempDir } = require('./support.js');
 
 test('starts with the in-memory engine as default', () => {
   const db = gluesql();
@@ -65,24 +66,52 @@ test('routes tables by the ENGINE clause and joins across engines', async () => 
   ]);
 });
 
-test('SHOW TABLES lists the tables of every engine', async () => {
-  const db = gluesql();
-  db.addEngine('scratch', { storage: 'memory' });
+test('SHOW TABLES lists the tables of every engine', async (t) => {
+  const db = gluesql({
+    engines: {
+      docs: { storage: 'json', path: tempDir(t) },
+      sheets: { storage: 'csv', path: tempDir(t) },
+    },
+  });
 
   await db.query(`
     CREATE TABLE Cached (id INTEGER) ENGINE = memory;
-    CREATE TABLE Scratch (id INTEGER) ENGINE = scratch;
+    CREATE TABLE Docs (id INTEGER) ENGINE = docs;
+    CREATE TABLE Sheets (id INTEGER) ENGINE = sheets;
   `);
 
   assert.deepEqual(await db.query('SHOW TABLES'), [
-    { type: 'SHOW TABLES', tables: ['Cached', 'Scratch'] },
+    { type: 'SHOW TABLES', tables: ['Cached', 'Docs', 'Sheets'] },
   ]);
 
-  db.removeEngine('scratch');
+  db.removeEngine('sheets');
 
   assert.deepEqual(await db.query('SHOW TABLES'), [
-    { type: 'SHOW TABLES', tables: ['Cached'] },
+    { type: 'SHOW TABLES', tables: ['Cached', 'Docs'] },
   ]);
+});
+
+test('joins tables owned by two persistent engines', async (t) => {
+  const db = gluesql({
+    engines: {
+      docs: { storage: 'json', path: tempDir(t) },
+      sheets: { storage: 'csv', path: tempDir(t) },
+    },
+  });
+
+  await db.query(`
+    CREATE TABLE Docs (id INTEGER, name TEXT) ENGINE = docs;
+    CREATE TABLE Sheets (id INTEGER, tag TEXT) ENGINE = sheets;
+    INSERT INTO Docs VALUES (1, 'glue'), (2, 'sql');
+    INSERT INTO Sheets VALUES (2, 'kept');
+  `);
+
+  assert.deepEqual(
+    await db.query(
+      'SELECT Docs.name, Sheets.tag FROM Docs JOIN Sheets ON Docs.id = Sheets.id',
+    ),
+    [{ type: 'SELECT', rows: [{ name: 'sql', tag: 'kept' }] }],
+  );
 });
 
 test('removed engines drop out of the registry', async () => {
@@ -151,11 +180,14 @@ test('rejects engine names no ENGINE clause could reach', () => {
 test('rejects misspelled and misplaced config options', () => {
   const db = gluesql();
 
-  // Would silently hand back a differently configured engine if unknown keys
-  // were dropped.
+  // Would silently hand back a volatile engine if unknown keys were dropped.
   assert.throws(
     () => db.addEngine('disk', { storage: 'memory', path: './data' }),
     /invalid storage config: unknown field `path`/,
+  );
+  assert.throws(
+    () => db.addEngine('disk', { storage: 'redb', paht: './data.db' }),
+    /invalid storage config: unknown field `paht`/,
   );
 });
 
@@ -179,29 +211,53 @@ test('supports custom functions', async () => {
   );
 });
 
-test('reports table metadata of every engine', async () => {
-  const db = gluesql();
-  db.addEngine('scratch', { storage: 'memory' });
+test('reports table metadata of every engine', async (t) => {
+  const db = gluesql({ engines: { docs: { storage: 'json', path: tempDir(t) } } });
 
   await db.query(`
     CREATE TABLE Cached (id INTEGER) ENGINE = memory;
-    CREATE TABLE Scratch (id INTEGER) ENGINE = scratch;
+    CREATE TABLE Docs (id INTEGER) ENGINE = docs;
   `);
 
   const [{ rows }] = await db.query(
     'SELECT OBJECT_NAME, CREATED FROM GLUE_OBJECTS ORDER BY OBJECT_NAME',
   );
 
+  // Every engine contributes its tables; only the in-memory engine records a
+  // creation timestamp.
   assert.deepEqual(
     rows.map(({ OBJECT_NAME }) => OBJECT_NAME),
-    ['Cached', 'Scratch'],
+    ['Cached', 'Docs'],
   );
   assert.match(rows[0].CREATED, /^\d{4}-\d{2}-\d{2} /);
+  assert.equal(rows[1].CREATED, null);
 });
 
 test('reports the backends this build carries', () => {
   const compiled = storages();
 
   assert.deepEqual(compiled, [...compiled].sort());
-  assert.ok(compiled.includes('memory'), 'every build carries the memory backend');
+
+  // The published build ships every embedded, pure-Rust backend.
+  for (const name of ['csv', 'json', 'memory', 'redb']) {
+    assert.ok(compiled.includes(name), `expected the build to carry ${name}`);
+  }
+});
+
+test('rejects backends this build does not carry', (t) => {
+  const missing = ['mongo', 'parquet', 'redis'].filter(
+    (name) => !storages().includes(name),
+  );
+
+  if (missing.length === 0) {
+    return t.skip('build with every optional storage');
+  }
+
+  for (const name of missing) {
+    assert.throws(
+      () => gluesql().addEngine('extra', { storage: name, path: './data' }),
+      new RegExp(`invalid storage config: unknown variant \`${name}\``),
+      `expected ${name} to be reported as unavailable`,
+    );
+  }
 });

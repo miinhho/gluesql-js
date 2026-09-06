@@ -266,6 +266,7 @@ it is what the `ENGINE` clause of `CREATE TABLE` refers to.
 | Scratch state & caches | Memory | `memory` (default) |
 | Real data that must survive restarts | One redb file | `redb` |
 | Data other tools read and write | JSONL / JSON files | `json` |
+| Spreadsheet-shaped data | CSV files | `csv` |
 
 ```javascript
 const { gluesql } = require('gluesql');
@@ -338,6 +339,21 @@ const db = gluesql({
   engines: { docs: { storage: 'json', path: './data' } },
   defaultEngine: 'docs',
 });
+```
+
+### `csv`
+
+`csv` keeps one `Table.csv` file per table inside `path`, next to a `Table.sql`
+schema file. Existing CSV files are queryable as they are; without a schema
+file every column is read as `TEXT`.
+
+```javascript
+const db = gluesql({
+  engines: { sheets: { storage: 'csv', path: './data' } },
+  defaultEngine: 'sheets',
+});
+
+await db.query('SELECT * FROM Report');
 ```
 
 ## License

@@ -25,6 +25,7 @@ gluesql_memory_storage = "0.20.0"
 gluesql-composite-storage = "0.20.0"
 gluesql-redb-storage = "0.20.0"
 gluesql-json-storage = "0.20.0"
+gluesql-csv-storage = "0.20.0"
 gluesql-opfs-storage = { path = "storages/opfs-storage", version = "0.20.0" }
 gluesql-web-storage = { path = "storages/web-storage", version = "0.20.0" }
 test-suite = { package = "gluesql-test-suite", version = "0.20.0" }
@@ -64,10 +65,11 @@ default = ["console_error_panic_hook"]
 
 # Node.js binding. The storage engines it registers are opt-in cargo features,
 # so a build only carries the backends it was asked for.
-nodejs = ["json", "redb"]
+nodejs = ["csv", "json", "redb"]
 # Every backend this crate can build.
 full = ["nodejs"]
 
+csv = ["dep:gluesql-csv-storage"]
 redb = ["dep:gluesql-redb-storage"]
 json = ["dep:gluesql-json-storage"]
 opfs = ["dep:gluesql-opfs-storage"]
@@ -95,6 +97,7 @@ gloo-utils = { version = "0.1.6", features = ["serde"] }
 console_error_panic_hook = { version = "0.1.6", optional = true }
 
 [target.'cfg(not(target_arch = "wasm32"))'.dependencies]
+gluesql-csv-storage = { workspace = true, optional = true }
 gluesql-json-storage = { workspace = true, optional = true }
 gluesql-redb-storage = { workspace = true, optional = true }
 
