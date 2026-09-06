@@ -12,6 +12,8 @@ use gluesql_csv_storage::CsvStorage;
 use gluesql_file_storage::FileStorage;
 #[cfg(feature = "json")]
 use gluesql_json_storage::JsonStorage;
+#[cfg(feature = "parquet")]
+use gluesql_parquet_storage::ParquetStorage;
 #[cfg(feature = "redb")]
 use gluesql_redb_storage::RedbStorage;
 
@@ -33,6 +35,9 @@ pub fn storages() -> Vec<String> {
 
     #[cfg(feature = "file")]
     storages.push("file");
+
+    #[cfg(feature = "parquet")]
+    storages.push("parquet");
 
     storages.sort_unstable();
 
@@ -71,6 +76,10 @@ pub enum StorageConfig {
     File {
         path: String,
     },
+    #[cfg(feature = "parquet")]
+    Parquet {
+        path: String,
+    },
 }
 
 impl StorageConfig {
@@ -92,11 +101,19 @@ impl StorageConfig {
             Self::Csv { path } => CsvStorage::new(path).map(box_storage),
             #[cfg(feature = "file")]
             Self::File { path } => FileStorage::new(path).map(box_storage),
+            #[cfg(feature = "parquet")]
+            Self::Parquet { path } => ParquetStorage::new(path).map(box_storage),
         }
     }
 }
 
-#[cfg(any(feature = "csv", feature = "file", feature = "json", feature = "redb"))]
+#[cfg(any(
+    feature = "csv",
+    feature = "file",
+    feature = "json",
+    feature = "parquet",
+    feature = "redb"
+))]
 fn box_storage<T: Engine + 'static>(storage: T) -> Box<dyn Engine> {
     Box::new(storage)
 }

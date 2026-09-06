@@ -34,6 +34,9 @@ jobs:
       - name: Check Node.js binding
         run: cargo check -p gluesql-js --no-default-features --features nodejs --locked
 
+      - name: Check Node.js binding with every storage
+        run: cargo check -p gluesql-js --no-default-features --features full --locked
+
       - name: Check OPFS binding
         run: cargo check -p gluesql-js --features opfs --target wasm32-unknown-unknown --locked
 
@@ -42,6 +45,9 @@ jobs:
 
       - name: Run Node.js binding clippy
         run: cargo clippy -p gluesql-js --no-default-features --features nodejs --locked --all-targets
+
+      - name: Run Node.js binding clippy with every storage
+        run: cargo clippy -p gluesql-js --no-default-features --features full --locked --all-targets
 
       - name: Run OPFS binding clippy
         run: cargo clippy -p gluesql-js --features opfs --target wasm32-unknown-unknown --locked --all-targets

@@ -268,6 +268,7 @@ it is what the `ENGINE` clause of `CREATE TABLE` refers to.
 | Data other tools read and write | JSONL / JSON files | `json` |
 | Spreadsheet-shaped data | CSV files | `csv` |
 | Rows you want to diff and review | One file per row | `file` |
+| Analytical snapshots | Parquet files | `parquet` |
 
 ```javascript
 const { gluesql } = require('gluesql');
@@ -307,6 +308,40 @@ engine cannot be removed - point `setDefaultEngine` at another engine first.
 
 Unknown keys in an engine config are rejected, so a misspelled option fails
 loudly instead of quietly falling back to a default.
+
+### Optional backends
+
+Every backend is a cargo feature, and the published binary carries only the
+embedded, pure-Rust ones. `parquet` pulls the Arrow codec stack and needs a C
+toolchain, so it is left out: it would add several megabytes to the native
+artifact of every user.
+
+`storages()` reports what a build carries, and an engine config naming a
+backend that is not compiled in is rejected as an unknown `storage` value:
+
+```javascript
+const { gluesql, storages } = require('gluesql');
+
+storages(); // ['csv', 'file', 'json', 'memory', 'redb']
+
+gluesql().addEngine('columns', { storage: 'parquet', path: './data' });
+// Error: invalid storage config: unknown variant `parquet`, expected one of ...
+```
+
+To get them, build the binding from a checkout:
+
+```sh
+npm run build:node:full                     # every backend this crate can build
+napi build --release --platform --js gluesql.native.js --dts gluesql.native.d.ts \
+  --no-default-features --features "nodejs parquet"   # or any subset
+```
+
+An installed `gluesql` picks up such a build without being rebuilt itself:
+point `NAPI_RS_NATIVE_LIBRARY_PATH` at the `.node` file.
+
+```sh
+NAPI_RS_NATIVE_LIBRARY_PATH=/opt/gluesql/gluesql_js.node node app.js
+```
 
 ### `redb`
 
@@ -367,6 +402,19 @@ lot of files for large tables.
 const db = gluesql({
   engines: { rows: { storage: 'file', path: './data' } },
   defaultEngine: 'rows',
+});
+```
+
+### `parquet`
+
+`parquet` keeps one `Table.parquet` file per table inside `path`, in standard
+Apache Parquet, so data tooling can read it directly. Every write rewrites the
+whole file, which suits analytical snapshots rather than row-by-row updates.
+
+```javascript
+const db = gluesql({
+  engines: { columns: { storage: 'parquet', path: './data' } },
+  defaultEngine: 'columns',
 });
 ```
 

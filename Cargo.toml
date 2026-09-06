@@ -27,6 +27,7 @@ gluesql-redb-storage = "0.20.0"
 gluesql-json-storage = "0.20.0"
 gluesql-csv-storage = "0.20.0"
 gluesql-file-storage = "0.20.0"
+gluesql-parquet-storage = "0.20.0"
 gluesql-opfs-storage = { path = "storages/opfs-storage", version = "0.20.0" }
 gluesql-web-storage = { path = "storages/web-storage", version = "0.20.0" }
 test-suite = { package = "gluesql-test-suite", version = "0.20.0" }
@@ -68,12 +69,13 @@ default = ["console_error_panic_hook"]
 # so a build only carries the backends it was asked for.
 nodejs = ["csv", "file", "json", "redb"]
 # Every backend this crate can build.
-full = ["nodejs"]
+full = ["nodejs", "parquet"]
 
 csv = ["dep:gluesql-csv-storage"]
 file = ["dep:gluesql-file-storage"]
 json = ["dep:gluesql-json-storage"]
 opfs = ["dep:gluesql-opfs-storage"]
+parquet = ["dep:gluesql-parquet-storage"]
 redb = ["dep:gluesql-redb-storage"]
 
 [dependencies]
@@ -102,6 +104,7 @@ console_error_panic_hook = { version = "0.1.6", optional = true }
 gluesql-csv-storage = { workspace = true, optional = true }
 gluesql-file-storage = { workspace = true, optional = true }
 gluesql-json-storage = { workspace = true, optional = true }
+gluesql-parquet-storage = { workspace = true, optional = true }
 gluesql-redb-storage = { workspace = true, optional = true }
 
 napi = { version = "3", default-features = false, features = ["napi4", "serde-json"] }
