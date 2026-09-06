@@ -269,6 +269,7 @@ it is what the `ENGINE` clause of `CREATE TABLE` refers to.
 | Spreadsheet-shaped data | CSV files | `csv` |
 | Rows you want to diff and review | One file per row | `file` |
 | Analytical snapshots | Parquet files | `parquet` |
+| A Redis server you already run | Redis | `redis` |
 
 ```javascript
 const { gluesql } = require('gluesql');
@@ -313,8 +314,8 @@ loudly instead of quietly falling back to a default.
 
 Every backend is a cargo feature, and the published binary carries only the
 embedded, pure-Rust ones. `parquet` pulls the Arrow codec stack and needs a C
-toolchain, so it is left out: it would add several megabytes to the native
-artifact of every user.
+toolchain, and `redis` talks to a server, so they are left out: they would add
+megabytes to the native artifact of every user.
 
 `storages()` reports what a build carries, and an engine config naming a
 backend that is not compiled in is rejected as an unknown `storage` value:
@@ -417,6 +418,25 @@ const db = gluesql({
   defaultEngine: 'columns',
 });
 ```
+
+### `redis`
+
+`redis` stores rows in a Redis server, prefixing every key with `namespace` so
+several databases can share one server. `host` defaults to `127.0.0.1` and
+`port` to `6379`.
+
+```javascript
+const db = gluesql({
+  engines: {
+    cache: { storage: 'redis', namespace: 'app', host: '127.0.0.1', port: 6379 },
+  },
+  defaultEngine: 'cache',
+});
+```
+
+`addEngine` connects immediately and throws when the server is unreachable.
+The attempt blocks the calling thread, so it is bounded by `connectTimeoutMs`
+(1000 by default).
 
 ## License
 
